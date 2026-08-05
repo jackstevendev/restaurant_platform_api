@@ -2,6 +2,8 @@ services:
 
   web:
     build: .
+    stdin_open: true
+    tty: true
     command: bash -c "rm -f tmp/pids/server.pid && bundle install && ./bin/rails server -b 0.0.0.0"
     volumes:
       - .:/app
@@ -15,6 +17,7 @@ services:
     environment:
       RAILS_ENV: development
       BUNDLE_WITHOUT: ""
+      BUNDLE_DEPLOYMENT: "0"
       DATABASE_HOST: db
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: password

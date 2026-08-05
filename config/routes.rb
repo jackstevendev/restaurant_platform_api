@@ -7,4 +7,25 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  namespace :api do
+    namespace :v1 do
+      resources :orders, only: [:show, :index]
+
+      resources :restaurants do
+        resources :products do
+          resources :inventory_items
+        end
+        resources :orders do
+          collection do
+            post :place_order
+          end
+          resources :order_items
+          resources :payments
+        end
+        resources :customers
+        resources :reports
+      end
+    end
+  end
 end

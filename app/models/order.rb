@@ -3,7 +3,7 @@ class Order < ApplicationRecord
   has_many :order_items, dependent: :destroy
   has_one :payment, dependent: :destroy
 
-  enum status: {
+  enum :status, {
     pending: "pending",
     paid: "paid",
     cancelled: "cancelled",

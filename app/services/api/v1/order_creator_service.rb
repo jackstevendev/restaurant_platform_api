@@ -22,7 +22,7 @@ module Api
 
       def add_order_items
         @order.order_items = @items.map do |item_params|
-          product = @products.find(item_params[:product_id])
+          product = @products[item_params[:product_id]]
           OrderItem.new(product: product, quantity: item_params[:quantity], price: product.price)
         end
       end

@@ -13,8 +13,12 @@ module Api
 
       def call
         @items.each do |item|
-          inventory = InventoryItem.find_by(product_id: item[:product_id])
+          product = @products[item[:product_id]]
+          inventory = product.inventory_item
           inventory.with_lock do
+            if inventory.quantity < item[:quantity]
+              raise Errors::InsufficientInventory.new("Insufficient inventory for #{product.name}")
+            end
             inventory.update!(quantity: inventory.quantity - item[:quantity])
           end
         end

@@ -12,7 +12,7 @@ module Api
       end
 
       def place_order
-        @order = OrderProcessorService.place_order(restaurant_id, order_params)
+        @order = OrderProcessorService.call(restaurant_id, order_params)
         render json: { message: "Order placed successfully", order: serialize_order(@order) }, status: :created
       end
 

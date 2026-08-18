@@ -101,6 +101,44 @@ RSpec.describe Api::V1::OrderProcessorService do
       end
     end
 
+    context 'under concurrent race conditions when stock is 1' do
+      let(:exclusive_product) { create(:product, restaurant: restaurant, price: 30.00, name: 'Exclusive Plate') }
+      let!(:exclusive_inventory) { create(:inventory_item, product: exclusive_product, quantity: 1) }
+
+      let(:concurrent_params) do
+        ActionController::Parameters.new(
+          customer_id: customer.id,
+          order_items: [
+            { product_id: exclusive_product.id, quantity: 1 }
+          ]
+        ).permit(:customer_id, order_items: [:product_id, :quantity])
+      end
+
+      it 'allows exactly ONE order to be created and rejects the concurrent one with InsufficientInventory' do
+        orders_created = []
+        errors = []
+        mutex = Mutex.new
+
+        threads = 2.times.map do
+          Thread.new do
+            ActiveRecord::Base.connection_pool.with_connection do
+              order = described_class.call(restaurant.id, concurrent_params)
+              mutex.synchronize { orders_created << order }
+            rescue Errors::InsufficientInventory => e
+              mutex.synchronize { errors << e }
+            end
+          end
+        end
+
+        threads.each(&:join)
+
+        expect(orders_created.count).to eq(1)
+        expect(errors.count).to eq(1)
+        expect(exclusive_inventory.reload.quantity).to eq(0)
+        expect(Order.where(total: 30.00).count).to eq(1)
+      end
+    end
+
     context 'when restaurant does not exist' do
       it 'raises ActiveRecord::RecordNotFound' do
         expect {

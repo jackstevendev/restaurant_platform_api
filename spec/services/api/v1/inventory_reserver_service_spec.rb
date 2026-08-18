@@ -75,5 +75,36 @@ RSpec.describe Api::V1::InventoryReserverService do
         }.to raise_error(ActiveRecord::RecordNotFound, 'Product not found for this restaurant')
       end
     end
+
+    context 'under concurrent race conditions (pessimistic locking)' do
+      let(:product_concurrent) { create(:product, restaurant: restaurant, name: 'Last Steak') }
+      let!(:inventory_concurrent) { create(:inventory_item, product: product_concurrent, quantity: 1) }
+
+      it 'allows only ONE request to succeed and rejects the second with InsufficientInventory' do
+        items = [{ product_id: product_concurrent.id, quantity: 1 }]
+        products_map = { product_concurrent.id => product_concurrent }
+
+        results = []
+        errors = []
+        mutex = Mutex.new
+
+        threads = 2.times.map do
+          Thread.new do
+            ActiveRecord::Base.connection_pool.with_connection do
+              described_class.call(restaurant, items, products_map)
+              mutex.synchronize { results << :success }
+            rescue Errors::InsufficientInventory => e
+              mutex.synchronize { errors << e }
+            end
+          end
+        end
+
+        threads.each(&:join)
+
+        expect(results.count).to eq(1)
+        expect(errors.count).to eq(1)
+        expect(inventory_concurrent.reload.quantity).to eq(0)
+      end
+    end
   end
 end

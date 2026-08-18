@@ -9,12 +9,12 @@ module Api
 
       def show
         @order = Order.includes(:customer, :payment, order_items: { product: :restaurant }).find(params[:id])
-        render json: OrderSerializer.new(order).serializable_hash
+        render json: OrderSerializer.new(@order).serializable_hash
       end
 
       def place_order
         @order = OrderProcessorService.call(restaurant_id, order_params)
-        render json: { message: "Order placed successfully", order: OrderSerializer.new(order).serializable_hash }, status: :created
+        render json: { message: "Order placed successfully", order: OrderSerializer.new(@order).serializable_hash }, status: :created
       end
 
       private

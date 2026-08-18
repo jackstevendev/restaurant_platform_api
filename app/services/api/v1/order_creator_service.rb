@@ -23,6 +23,8 @@ module Api
       def add_order_items
         @order.order_items = @items.map do |item_params|
           product = @products[item_params[:product_id]]
+          raise ActiveRecord::RecordNotFound, "Product not found for this restaurant" unless product
+
           OrderItem.new(product: product, quantity: item_params[:quantity], price: product.price)
         end
       end

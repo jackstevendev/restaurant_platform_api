@@ -14,7 +14,11 @@ module Api
       def call
         @items.each do |item|
           product = @products[item[:product_id]]
+          raise ActiveRecord::RecordNotFound, "Product not found for this restaurant" unless product
+
           inventory = product.inventory_item
+          raise ActiveRecord::RecordNotFound, "Inventory not found for #{product.name}" unless inventory
+
           inventory.with_lock do
             if inventory.quantity < item[:quantity]
               raise Errors::InsufficientInventory.new("Insufficient inventory for #{product.name}")

@@ -5,7 +5,10 @@ module Api
 
       # GET /api/v1/restaurants
       def index
-        @restaurants = Restaurant.all
+        @restaurants = Rails.cache.fetch("restaurants", expires_in: 5.minutes) do
+          p "SIII VOLVIO A ENTRAR*************************** 123"
+          Restaurant.includes(:products).all
+        end
         render json: @restaurants
       end
 

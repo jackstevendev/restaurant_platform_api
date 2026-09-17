@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h2>Thank you for your order, <%= @customer.name %>!</h2>
+    <p>Your order <strong>#<%= @order.id %></strong> has been confirmed successfully.</p>
+
+    <h3>Order summary:</h3>
+    <ul>
+      <% @order.order_items.each do |item| %>
+        <li><%= item.product&.name %> x <%= item.quantity %> - $<%= item.price * item.quantity %></li>
+      <% end %>
+    </ul>
+
+    <p><strong>Total: $<%= @order.total %></strong></p>
+
+    <% if @invoice_url.present? %>
+      <p>Download your invoice here: <a href="<%= @invoice_url %>"><%= @invoice_url %></a></p>
+    <% end %>
+  </body>
+</html>
+

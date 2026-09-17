@@ -1,0 +1,15 @@
+Thank you for your order, <%= @customer.name %>!
+
+Your order #<%= @order.id %> has been confirmed successfully.
+
+Order summary:
+<% @order.order_items.each do |item| %>
+- <%= item.product&.name %> x <%= item.quantity %> - $<%= item.price * item.quantity %>
+<% end %>
+
+Total: $<%= @order.total %>
+
+<% if @invoice_url.present? %>
+Download your invoice here: <%= @invoice_url %>
+<% end %>
+

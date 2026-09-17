@@ -1,0 +1,14 @@
+⚠️ Low Stock Alert — <%= @restaurant.name %>
+
+The following products are at or below their minimum stock level:
+
+<% @low_stock_items.each do |item| %>
+- <%= item.product.name %>
+  Current stock: <%= item.quantity %> | Minimum required: <%= item.minimum_stock %>
+<% end %>
+
+Please restock these products to avoid service disruptions.
+
+---
+Restaurant Platform — Automated inventory alert system
+

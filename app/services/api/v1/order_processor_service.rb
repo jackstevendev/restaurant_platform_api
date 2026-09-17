@@ -11,10 +11,16 @@ module Api
       end
 
       def call
-        ActiveRecord::Base.transaction do
+        order = ActiveRecord::Base.transaction do
           InventoryReserverService.call(restaurant, @order_params[:order_items], products)
           OrderCreatorService.call(restaurant, @order_params, products)
         end
+
+        # Post-commit hooks (executed strictly after PostgreSQL commit):
+        Audit::OrderAuditService.call(order)
+        OrderInvoiceJob.perform_later(order.id)
+
+        order
       end
 
       private

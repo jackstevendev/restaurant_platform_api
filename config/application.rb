@@ -29,6 +29,10 @@ module App
       g.orm :active_record, primary_key_type: :uuid
     end
 
+    # Configure Active Job adapter and transactional enqueueing
+    config.active_job.queue_adapter = :sidekiq
+    config.active_job.enqueue_after_transaction_commit = :always
+
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.

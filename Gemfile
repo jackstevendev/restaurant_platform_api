@@ -34,6 +34,13 @@ gem "image_processing", "~> 1.2"
 gem "faker"
 gem "jsonapi-serializer"
 
+# Background jobs and cache
+gem "sidekiq"
+gem "redis", "~> 5.0"
+
+# MongoDB driver for audit logging
+gem "mongo", "~> 2.20"
+
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"

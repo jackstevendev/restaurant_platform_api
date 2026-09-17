@@ -25,4 +25,41 @@ RSpec.describe InventoryItem, type: :model do
       expect(inventory_item.errors[:quantity]).to be_present
     end
   end
+
+  describe '.below_minimum_stock' do
+    let(:restaurant) { create(:restaurant) }
+
+    context 'when quantity is less than minimum_stock' do
+      let!(:item) { create(:product, :with_inventory, restaurant: restaurant, quantity: 2, minimum_stock: 5).inventory_item }
+
+      it 'includes the item in the scope' do
+        expect(described_class.below_minimum_stock).to include(item)
+      end
+    end
+
+    context 'when quantity equals minimum_stock (boundary)' do
+      let!(:item) { create(:product, :with_inventory, restaurant: restaurant, quantity: 5, minimum_stock: 5).inventory_item }
+
+      it 'includes the item in the scope (boundary also triggers alert)' do
+        expect(described_class.below_minimum_stock).to include(item)
+      end
+    end
+
+    context 'when quantity is greater than minimum_stock' do
+      let!(:item) { create(:product, :with_inventory, restaurant: restaurant, quantity: 10, minimum_stock: 5).inventory_item }
+
+      it 'does NOT include the item in the scope' do
+        expect(described_class.below_minimum_stock).not_to include(item)
+      end
+    end
+
+    context 'when quantity is 0 (out of stock)' do
+      let!(:item) { create(:product, :with_inventory, restaurant: restaurant, quantity: 0, minimum_stock: 5).inventory_item }
+
+      it 'includes the item in the scope' do
+        expect(described_class.below_minimum_stock).to include(item)
+      end
+    end
+  end
 end
+

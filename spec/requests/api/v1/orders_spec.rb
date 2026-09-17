@@ -66,12 +66,14 @@ RSpec.describe 'Api::V1::Orders', type: :request do
     end
 
     context 'when order placement is successful' do
-      it 'creates the order, reduces stock, and returns 201 with serialized order' do
+      it 'creates the order, reduces stock, enqueues background invoice job, and returns 201 with serialized order' do
         expect {
           post "/api/v1/restaurants/#{restaurant.id}/orders/place_order",
                params: valid_params,
                as: :json
-        }.to change(Order, :count).by(1).and change(OrderItem, :count).by(2)
+        }.to change(Order, :count).by(1)
+         .and change(OrderItem, :count).by(2)
+         .and have_enqueued_job(OrderInvoiceJob)
 
         expect(response).to have_http_status(:created)
         json = JSON.parse(response.body)

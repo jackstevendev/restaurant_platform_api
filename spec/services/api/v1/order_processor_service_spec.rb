@@ -20,12 +20,16 @@ RSpec.describe Api::V1::OrderProcessorService do
 
   describe '.call' do
     context 'when order placement is successful' do
-      it 'reserves inventory and creates order within transaction' do
+      it 'reserves inventory, creates order, records audit log in MongoDB and enqueues OrderInvoiceJob' do
         order = nil
+        expect(Audit::OrderAuditService).to receive(:call).and_call_original
+        expect(OrderInvoiceJob).to receive(:perform_later).and_call_original
 
         expect {
           order = described_class.call(restaurant.id, order_params)
-        }.to change(Order, :count).by(1).and change(OrderItem, :count).by(2)
+        }.to change(Order, :count).by(1)
+         .and change(OrderItem, :count).by(2)
+         .and have_enqueued_job(OrderInvoiceJob)
 
         expect(order).to be_persisted
         expect(order.total).to eq(BigDecimal('60.00'))
@@ -45,7 +49,10 @@ RSpec.describe Api::V1::OrderProcessorService do
         ).permit(:customer_id, order_items: [:product_id, :quantity])
       end
 
-      it 'raises InsufficientInventory and rolls back inventory and order creation' do
+      it 'raises InsufficientInventory, rolls back, and does NOT audit or enqueue job' do
+        expect(Audit::OrderAuditService).not_to receive(:call)
+        expect(OrderInvoiceJob).not_to receive(:perform_later)
+
         expect {
           described_class.call(restaurant.id, excessive_order_params)
         }.to raise_error(Errors::InsufficientInventory)

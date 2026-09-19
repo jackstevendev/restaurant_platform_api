@@ -39,7 +39,7 @@ gem "sidekiq"
 gem "redis", "~> 5.0"
 
 # MongoDB driver for audit logging
-gem "mongo", "~> 2.20"
+gem "mongo", "~> 2.26"
 
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible

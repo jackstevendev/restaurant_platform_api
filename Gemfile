@@ -36,7 +36,7 @@ gem "jsonapi-serializer"
 
 # Background jobs and cache
 gem "sidekiq"
-gem "redis", "~> 5.0"
+gem "redis", "~> 6.0"
 
 # MongoDB driver for audit logging
 gem "mongo", "~> 2.20"
